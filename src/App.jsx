@@ -116,7 +116,7 @@ function App() {
 
   const initializeProviderAndContract = async () => {
     try {
-      const newProvider = new ethers.providers.Web3Provider(window.ethereum);
+      const newProvider = new ethers.BrowserProvider(window.ethereum);
       const signer = newProvider.getSigner();
       const assessmentContract = new ethers.Contract(contractAddress, contractABI, signer);
       const accounts = await newProvider.listAccounts();
