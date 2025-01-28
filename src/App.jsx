@@ -105,37 +105,31 @@ const contractABI = [
 
 function App() {
   const [currentAccount, setCurrentAccount] = useState(null);
+  const [provider, setProvider] = useState(null);
   const [contract, setContract] = useState(null);
   const [balance, setBalance] = useState(0);
   const [amount, setAmount] = useState("");
 
   useEffect(() => {
-    if (window.ethereum) {
-      connectWallet();
-      initializeContract();
-    } else {
-      alert("Please install MetaMask to use this DApp!");
-    }
+    initializeProviderAndContract();
   }, []);
 
-  const connectWallet = async () => {
+  const initializeProviderAndContract = async () => {
     try {
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-      setCurrentAccount(accounts[0]);
-    } catch (error) {
-      console.error("Error connecting wallet:", error);
-    }
-  };
-
-  const initializeContract = async () => {
-    try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
+      const newProvider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = newProvider.getSigner();
       const assessmentContract = new ethers.Contract(contractAddress, contractABI, signer);
+      const accounts = await newProvider.listAccounts();
+
+      if (accounts.length > 0) {
+        setCurrentAccount(accounts[0]);
+      }
+
+      setProvider(newProvider);
       setContract(assessmentContract);
       fetchBalance(assessmentContract);
     } catch (error) {
-      console.error("Error initializing contract:", error);
+      console.error("Error initializing provider and contract:", error);
     }
   };
 
@@ -208,7 +202,7 @@ function App() {
         </div>
       ) : (
         <button
-          onClick={connectWallet}
+          onClick={initializeProviderAndContract}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
         >
           Connect Wallet
